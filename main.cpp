@@ -6,12 +6,32 @@
 #include "./SDLException.hpp"
 #include <thread>
 
-void compute(SDLProgram &program, int height, Mandelbrot &mandelbrot)
+void worker(SDLProgram &program, Mandelbrot &mandelbrot, int debut, int fin)
 {
     std::chrono::steady_clock::time_point t_begin = std::chrono::steady_clock::now();
-    for (int y = 0; y < height; y++)
+    for (int y = debut; y < fin; y++)
     {
         program.updateLine(y, mandelbrot.drawLine(y));
+    }
+    std::chrono::steady_clock::time_point t_end = std::chrono::steady_clock::now();
+    std::cout
+        << "It took "
+        << std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_begin).count()
+        << " milliseconds to compute this worker." << std::endl;
+}
+void compute(SDLProgram &program, int height, Mandelbrot &mandelbrot, int nb_workers)
+{
+    std::thread workers[nb_workers];
+    std::chrono::steady_clock::time_point t_begin = std::chrono::steady_clock::now();
+    for (int i = 1; i <= nb_workers; i++)
+    {
+        double fin = i * height / nb_workers;
+        int debut = (i - 1) * height / nb_workers;
+        workers[i] = std::thread(worker, std::ref(program), std::ref(mandelbrot), debut, fin);
+    }
+    for (int i = 1; i <= nb_workers; i++)
+    {
+        workers[i].join();
     }
     std::chrono::steady_clock::time_point t_end = std::chrono::steady_clock::now();
 
@@ -28,7 +48,8 @@ int main()
     // Initialize a mandelbrot object of given width and height
     int width = 1000;
     int height = 1000;
-    Mandelbrot mandelbrot(width, height, -2.1, 0.6, -1.2, 1.2, 500);
+    int nb_workers = 4;
+    Mandelbrot mandelbrot(width, height, -2.1, 0.6, -1.2, 1.2, 10000);
     try
     {
 
@@ -42,7 +63,7 @@ int main()
         {
             program.updateLine(y, mandelbrot.drawLine(y));
         }*/
-        std::thread t(compute, std::ref(program), height, std::ref(mandelbrot));
+        std::thread t(compute, std::ref(program), height, std::ref(mandelbrot), nb_workers);
 
         // Get a time indicator at the end of the computation
         program.loop();
