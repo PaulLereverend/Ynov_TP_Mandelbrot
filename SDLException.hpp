@@ -4,12 +4,13 @@
 #include <iostream>
 #include <string>
 
-class SDLException: public std::exception {
-    public:
+class SDLException
+{
+public:
     SDLException();
-    virtual const char* what() const throw();
+    virtual const char *what() const throw();
 
-    private:
+private:
     std::string msg;
 };
 
