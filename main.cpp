@@ -6,10 +6,10 @@
 #include "./SDLException.hpp"
 #include <thread>
 
-void worker(SDLProgram &program, Mandelbrot &mandelbrot, int debut, int fin)
+void worker(SDLProgram &program, Mandelbrot &mandelbrot, int num_worker, int height, int total_workers)
 {
     std::chrono::steady_clock::time_point t_begin = std::chrono::steady_clock::now();
-    for (int y = debut; y < fin; y++)
+    for (int y = num_worker; y < height; y += total_workers)
     {
         program.updateLine(y, mandelbrot.drawLine(y));
     }
@@ -25,9 +25,7 @@ void compute(SDLProgram &program, int height, Mandelbrot &mandelbrot, int nb_wor
     std::chrono::steady_clock::time_point t_begin = std::chrono::steady_clock::now();
     for (int i = 1; i <= nb_workers; i++)
     {
-        double fin = i * height / nb_workers;
-        int debut = (i - 1) * height / nb_workers;
-        workers[i] = std::thread(worker, std::ref(program), std::ref(mandelbrot), debut, fin);
+        workers[i] = std::thread(worker, std::ref(program), std::ref(mandelbrot), i, height, nb_workers);
     }
     for (int i = 1; i <= nb_workers; i++)
     {
