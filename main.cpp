@@ -47,7 +47,7 @@ int main()
     int width = 1000;
     int height = 1000;
     int nb_workers = 4;
-    Mandelbrot mandelbrot(width, height, -2.1, 0.6, -1.2, 1.2, 10000);
+    Mandelbrot mandelbrot(width, height, -2.1, 0.6, -1.2, 1.2, 1000);
     try
     {
 
